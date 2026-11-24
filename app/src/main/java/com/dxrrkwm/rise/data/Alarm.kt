@@ -5,7 +5,7 @@ import org.json.JSONObject
 import java.time.DayOfWeek
 import java.time.ZonedDateTime
 
-enum class Mission { NONE, MATH, SHAKE, QR }
+enum class Mission { MATH, SHAKE, QR }
 
 data class Alarm(
     val id: Int,
@@ -14,7 +14,8 @@ data class Alarm(
     val days: Set<DayOfWeek> = emptySet(),
     val enabled: Boolean = true,
     val label: String = "",
-    val mission: Mission = Mission.MATH,
+    // done one after another, empty means a plain dismiss button
+    val missions: List<Mission> = listOf(Mission.MATH),
     val level: Int = 2,
     val rampSeconds: Int = 60,
     val vibrate: Boolean = true,
@@ -35,7 +36,7 @@ data class Alarm(
         .put("days", JSONArray(days.map { it.value }))
         .put("enabled", enabled)
         .put("label", label)
-        .put("mission", mission.name)
+        .put("missions", JSONArray(missions.map { it.name }))
         .put("level", level)
         .put("ramp", rampSeconds)
         .put("vibrate", vibrate)
@@ -56,13 +57,21 @@ data class Alarm(
                 days = (0 until days.length()).map { DayOfWeek.of(days.getInt(it)) }.toSet(),
                 enabled = json.optBoolean("enabled", true),
                 label = json.optString("label"),
-                mission = Mission.entries.find { it.name == json.optString("mission") } ?: Mission.MATH,
+                missions = missions(json),
                 level = json.optInt("level", 2),
                 rampSeconds = json.optInt("ramp", 60),
                 vibrate = json.optBoolean("vibrate", true),
                 wakeCheck = json.optBoolean("wake_check", true),
                 sound = json.optString("sound", Sounds.DEFAULT),
             )
+        }
+
+        // 0.1.0 stored a single "mission"
+        private fun missions(json: JSONObject): List<Mission> {
+            val names = json.optJSONArray("missions")
+                ?.let { array -> (0 until array.length()).map { array.getString(it) } }
+                ?: listOf(json.optString("mission"))
+            return names.mapNotNull { name -> Mission.entries.find { it.name == name } }
         }
     }
 }

@@ -1,5 +1,18 @@
 package com.dxrrkwm.rise.ring
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
+import com.dxrrkwm.rise.ui.icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,22 +83,62 @@ fun RingScreen(onClose: () -> Unit) {
 @Composable
 private fun MissionScreen(onDone: () -> Unit) {
     val alarm = remember { WakeSession.alarm() }
-    val mission = if (alarm.mission == Mission.QR && Prefs.qrCode.isEmpty()) Mission.MATH else alarm.mission
+    val missions = remember { alarm.missions.map { if (it == Mission.QR && Prefs.qrCode.isEmpty()) Mission.MATH else it } }
+    var step by rememberSaveable { mutableIntStateOf(0) }
+
+    fun next() {
+        if (step >= missions.lastIndex) onDone() else step += 1
+    }
 
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Clock()
         if (alarm.label.isNotBlank()) {
             Text(alarm.label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
         }
+        if (missions.size > 1) Progress(missions, step)
         Spacer(Modifier.height(24.dp))
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            when (mission) {
-                Mission.NONE -> Button(onClick = onDone) { Text(stringResource(R.string.ring_dismiss)) }
-                Mission.MATH -> MathMission(level = alarm.level, onDone = onDone)
-                Mission.SHAKE -> ShakeMission(level = alarm.level, onDone = onDone)
-                Mission.QR -> QrMission(expected = Prefs.qrCode, onDone = onDone)
+            if (missions.isEmpty()) return@Box DismissButton(onDone)
+            key(step) {
+                when (missions[step]) {
+                    Mission.MATH -> MathMission(level = alarm.level, onDone = ::next)
+                    Mission.SHAKE -> ShakeMission(level = alarm.level, onDone = ::next)
+                    Mission.QR -> QrMission(expected = Prefs.qrCode, onDone = ::next)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun Progress(missions: List<Mission>, step: Int) {
+    Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        missions.forEachIndexed { index, mission ->
+            Icon(
+                mission.icon,
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+                tint = when {
+                    index < step -> MaterialTheme.colorScheme.primary
+                    index == step -> MaterialTheme.colorScheme.secondary
+                    else -> MaterialTheme.colorScheme.outline
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DismissButton(onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(180.dp)
+            .clip(CircleShape)
+            .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(stringResource(R.string.ring_dismiss), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -109,7 +162,7 @@ private fun CheckScreen(onConfirm: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth().height(64.dp)) {
+        Button(onClick = onConfirm, shape = CircleShape, modifier = Modifier.fillMaxWidth().height(64.dp)) {
             Text(stringResource(R.string.check_confirm), style = MaterialTheme.typography.titleMedium)
         }
     }
@@ -125,8 +178,8 @@ private fun Clock() {
     }
     Text(
         time.format(DateTimeFormatter.ofPattern("HH:mm")),
-        style = MaterialTheme.typography.displayLarge,
-        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.displayLarge.copy(fontSize = 88.sp),
+        color = MaterialTheme.colorScheme.onSurface,
     )
 }
 

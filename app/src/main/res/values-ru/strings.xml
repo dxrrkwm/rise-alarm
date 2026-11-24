@@ -45,12 +45,6 @@
         <item>Сб</item>
         <item>Вс</item>
     </string-array>
-    <string-array name="missions">
-        <item>Без задания</item>
-        <item>Примеры</item>
-        <item>Встряска</item>
-        <item>QR / штрихкод</item>
-    </string-array>
     <string-array name="levels">
         <item>Легко</item>
         <item>Средне</item>
@@ -112,4 +106,13 @@
     <string name="hours_minutes">%1$d ч %2$02d мин</string>
     <string name="section_alarm">Будильник</string>
     <string name="alarm_volume">Громкость</string>
+    <string name="mission_math">Примеры</string>
+    <string name="mission_shake">Встряска</string>
+    <string name="mission_qr">QR-код</string>
+    <string name="missions_none">Без задания: выключается одной кнопкой</string>
+    <string name="missions_order">Выполняются по очереди, в том порядке, как ты выбрал</string>
+    <string name="missions_hint">Выбери одно или несколько</string>
+    <string name="no_active_alarms">Нет активных будильников</string>
+    <string name="section_sound">Звук</string>
+    <string name="section_more">Ещё</string>
 </resources>

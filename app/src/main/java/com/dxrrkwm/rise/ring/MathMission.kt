@@ -1,12 +1,14 @@
 package com.dxrrkwm.rise.ring
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dxrrkwm.rise.R
@@ -70,7 +74,7 @@ fun MathMission(level: Int, onDone: () -> Unit, total: Int = 3) {
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(stringResource(R.string.math_progress, solved + 1, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(task.question, style = MaterialTheme.typography.displaySmall)
+        Text(task.question, style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onSurface)
         Text(
             input.ifEmpty { "?" },
             style = MaterialTheme.typography.displayMedium,
@@ -90,22 +94,31 @@ fun MathMission(level: Int, onDone: () -> Unit, total: Int = 3) {
 @Composable
 private fun Keypad(onDigit: (Char) -> Unit, onErase: () -> Unit, onSubmit: () -> Unit) {
     val rows = listOf("123", "456", "789", "⌫0✓")
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         rows.forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 row.forEach { key ->
-                    FilledTonalButton(
-                        onClick = {
-                            when (key) {
-                                '⌫' -> onErase()
-                                '✓' -> onSubmit()
-                                else -> onDigit(key)
-                            }
-                        },
-                        shape = CircleShape,
-                        modifier = Modifier.weight(1f).aspectRatio(1.6f),
+                    val submit = key == '✓'
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .aspectRatio(1.7f)
+                            .clip(CircleShape)
+                            .background(if (submit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .clickable {
+                                when (key) {
+                                    '⌫' -> onErase()
+                                    '✓' -> onSubmit()
+                                    else -> onDigit(key)
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(key.toString(), style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            key.toString(),
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Light),
+                            color = if (submit) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
             }

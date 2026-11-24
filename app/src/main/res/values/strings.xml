@@ -46,12 +46,6 @@
         <item>Sat</item>
         <item>Sun</item>
     </string-array>
-    <string-array name="missions">
-        <item>No mission</item>
-        <item>Math</item>
-        <item>Shake</item>
-        <item>QR / barcode</item>
-    </string-array>
     <string-array name="levels">
         <item>Easy</item>
         <item>Medium</item>
@@ -113,4 +107,13 @@
     <string name="hours_minutes">%1$d h %2$02d min</string>
     <string name="section_alarm">Alarm</string>
     <string name="alarm_volume">Volume</string>
+    <string name="mission_math">Math</string>
+    <string name="mission_shake">Shake</string>
+    <string name="mission_qr">QR code</string>
+    <string name="missions_none">No mission: a single button turns it off</string>
+    <string name="missions_order">Done one after another, in the order you picked them</string>
+    <string name="missions_hint">Pick one or several</string>
+    <string name="no_active_alarms">No active alarms</string>
+    <string name="section_sound">Sound</string>
+    <string name="section_more">More</string>
 </resources>

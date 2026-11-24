@@ -44,12 +44,6 @@
         <item>Сб</item>
         <item>Нд</item>
     </string-array>
-    <string-array name="missions">
-        <item>Без завдання</item>
-        <item>Приклади</item>
-        <item>Струс</item>
-        <item>QR / штрихкод</item>
-    </string-array>
     <string-array name="levels">
         <item>Легко</item>
         <item>Середньо</item>
@@ -111,4 +105,13 @@
     <string name="hours_minutes">%1$d год %2$02d хв</string>
     <string name="section_alarm">Будильник</string>
     <string name="alarm_volume">Гучність</string>
+    <string name="mission_math">Приклади</string>
+    <string name="mission_shake">Струс</string>
+    <string name="mission_qr">QR-код</string>
+    <string name="missions_none">Без завдання: вимикається однією кнопкою</string>
+    <string name="missions_order">Виконуються по черзі, в тому порядку, як ти обрав</string>
+    <string name="missions_hint">Обери одне або кілька</string>
+    <string name="no_active_alarms">Немає активних будильників</string>
+    <string name="section_sound">Звук</string>
+    <string name="section_more">Ще</string>
 </resources>

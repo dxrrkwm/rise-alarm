@@ -5,32 +5,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,147 +47,131 @@ import com.dxrrkwm.rise.data.AlarmStore
 import com.dxrrkwm.rise.data.Mission
 import com.dxrrkwm.rise.data.Prefs
 import com.dxrrkwm.rise.data.Sounds
-import java.time.DayOfWeek
 
 private val RAMPS = listOf(0, 30, 60, 120)
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AlarmEditScreen(initial: Alarm, onClose: () -> Unit) {
     val context = LocalContext.current
-    val resources = LocalResources.current
     var alarm by remember { mutableStateOf(initial) }
-    val time = rememberTimePickerState(initial.hour, initial.minute, is24Hour = true)
+    var pickingSound by remember { mutableStateOf(false) }
     val exists = remember { AlarmStore.get(initial.id) != null }
-    val missions = stringArrayResource(R.array.missions)
     val levels = stringArrayResource(R.array.levels)
 
-    fun save() {
-        val at = AlarmActions.save(context, alarm.copy(hour = time.hour, minute = time.minute, enabled = true))
-        if (at != null) Toast.makeText(context, context.untilText(at), Toast.LENGTH_SHORT).show()
-        onClose()
-    }
-
-    var pickingSound by remember { mutableStateOf(false) }
     if (pickingSound) {
         SoundPicker(alarm.sound, onPick = { alarm = alarm.copy(sound = it) }, onClose = { pickingSound = false })
         return
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(if (exists) R.string.alarm_edit else R.string.alarm_new)) },
-                navigationIcon = {
-                    IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, contentDescription = null) }
-                },
-                actions = {
-                    if (exists) {
-                        IconButton(onClick = {
-                            AlarmActions.delete(context, initial)
-                            onClose()
-                        }) { Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.alarm_delete)) }
+    fun save() {
+        val at = AlarmActions.save(context, alarm.copy(enabled = true))
+        if (at != null) Toast.makeText(context, context.resources.untilText(at), Toast.LENGTH_SHORT).show()
+        onClose()
+    }
+
+    Surface(Modifier.fillMaxSize()) {
+        Column(Modifier.statusBarsPadding().navigationBarsPadding()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, contentDescription = null) }
+                Spacer(Modifier.weight(1f))
+                if (exists) {
+                    IconButton(onClick = {
+                        AlarmActions.delete(context, initial)
+                        onClose()
+                    }) { Icon(Icons.Rounded.DeleteOutline, contentDescription = stringResource(R.string.alarm_delete)) }
+                }
+            }
+
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(32.dp),
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    TimeWheel(alarm.hour, alarm.minute) { h, m -> alarm = alarm.copy(hour = h, minute = m) }
+                    Text(
+                        LocalResources.current.untilText(alarm.nextTrigger()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Section(stringResource(R.string.section_days)) {
+                    DayPicker(alarm.days) { day -> alarm = alarm.copy(days = alarm.days.toggle(day)) }
+                }
+
+                Section(stringResource(R.string.section_mission)) {
+                    MissionPicker(alarm.missions) { alarm = alarm.copy(missions = it) }
+                    Text(
+                        stringResource(
+                            when {
+                                alarm.missions.isEmpty() -> R.string.missions_none
+                                alarm.missions.size > 1 -> R.string.missions_order
+                                else -> R.string.missions_hint
+                            },
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (alarm.missions.any { it == Mission.MATH || it == Mission.SHAKE }) {
+                        Choice(levels.toList(), alarm.level - 1) { alarm = alarm.copy(level = it + 1) }
                     }
-                },
-            )
-        },
-        bottomBar = {
+                    if (Mission.QR in alarm.missions && Prefs.qrCode.isEmpty()) {
+                        Text(stringResource(R.string.qr_not_set), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
+                Section(stringResource(R.string.section_sound)) {
+                    LinkRow(stringResource(R.string.sound), Sounds.title(context, alarm.sound)) { pickingSound = true }
+                    Text(stringResource(R.string.section_ramp), style = MaterialTheme.typography.bodyLarge)
+                    val ramps = RAMPS.map { if (it == 0) stringResource(R.string.ramp_off) else stringResource(R.string.seconds, it) }
+                    Choice(ramps, RAMPS.indexOf(alarm.rampSeconds)) { alarm = alarm.copy(rampSeconds = RAMPS[it]) }
+                    SwitchRow(stringResource(R.string.vibration), alarm.vibrate, { alarm = alarm.copy(vibrate = it) })
+                }
+
+                Section(stringResource(R.string.section_more)) {
+                    SwitchRow(
+                        stringResource(R.string.wake_check),
+                        alarm.wakeCheck,
+                        { alarm = alarm.copy(wakeCheck = it) },
+                        hint = stringResource(R.string.wake_check_hint, Prefs.checkDelayMinutes),
+                    )
+                    OutlinedTextField(
+                        value = alarm.label,
+                        onValueChange = { alarm = alarm.copy(label = it) },
+                        placeholder = { Text(stringResource(R.string.label)) },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+
             Button(
                 onClick = ::save,
-                modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(56.dp),
-            ) { Text(stringResource(R.string.save)) }
-        },
-    ) { padding ->
-        Column(
-            Modifier
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            TimePicker(state = time, modifier = Modifier.align(Alignment.CenterHorizontally))
+                shape = CircleShape,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp).height(56.dp),
+            ) { Text(stringResource(R.string.save), style = MaterialTheme.typography.titleMedium) }
+        }
+    }
+}
 
-            Section(stringResource(R.string.section_days)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DayOfWeek.entries.forEach { day ->
-                        FilterChip(
-                            selected = day in alarm.days,
-                            onClick = { alarm = alarm.copy(days = alarm.days.toggle(day)) },
-                            label = { Text(resources.dayName(day)) },
-                        )
-                    }
-                }
-            }
-
-            Section(stringResource(R.string.section_mission)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Mission.entries.forEach { mission ->
-                        FilterChip(
-                            selected = alarm.mission == mission,
-                            onClick = { alarm = alarm.copy(mission = mission) },
-                            label = { Text(missions[mission.ordinal]) },
-                        )
-                    }
-                }
-                if (alarm.mission == Mission.MATH || alarm.mission == Mission.SHAKE) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        levels.forEachIndexed { index, name ->
-                            FilterChip(
-                                selected = alarm.level == index + 1,
-                                onClick = { alarm = alarm.copy(level = index + 1) },
-                                label = { Text(name) },
-                            )
-                        }
-                    }
-                }
-                if (alarm.mission == Mission.QR && Prefs.qrCode.isEmpty()) {
-                    Text(stringResource(R.string.qr_not_set), color = MaterialTheme.colorScheme.error)
-                }
-            }
-
-            Section(stringResource(R.string.sound)) {
-                Row(
-                    Modifier.fillMaxWidth().clickable { pickingSound = true }.padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Rounded.MusicNote, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-                    Text(
-                        Sounds.title(context, alarm.sound),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f).padding(start = 16.dp),
-                    )
-                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null)
-                }
-            }
-
-            Section(stringResource(R.string.section_ramp)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RAMPS.forEach { seconds ->
-                        FilterChip(
-                            selected = alarm.rampSeconds == seconds,
-                            onClick = { alarm = alarm.copy(rampSeconds = seconds) },
-                            label = { Text(if (seconds == 0) stringResource(R.string.ramp_off) else stringResource(R.string.seconds, seconds)) },
-                        )
-                    }
-                }
-            }
-
-            SwitchRow(stringResource(R.string.vibration), alarm.vibrate, { alarm = alarm.copy(vibrate = it) })
-            SwitchRow(
-                stringResource(R.string.wake_check),
-                alarm.wakeCheck,
-                { alarm = alarm.copy(wakeCheck = it) },
-                hint = stringResource(R.string.wake_check_hint, Prefs.checkDelayMinutes),
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Choice(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEachIndexed { index, name ->
+            FilterChip(
+                selected = index == selected,
+                onClick = { onSelect(index) },
+                label = { Text(name) },
+                shape = CircleShape,
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.primary,
+                ),
             )
-
-            OutlinedTextField(
-                value = alarm.label,
-                onValueChange = { alarm = alarm.copy(label = it) },
-                label = { Text(stringResource(R.string.label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(8.dp))
         }
     }
 }

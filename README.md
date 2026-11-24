@@ -8,6 +8,7 @@ Written by [Claude](https://claude.com/claude-code) together with [@dxrrkwm](htt
 
 **Alarm**
 - Missions to turn it off: math problems, shaking, scanning your own QR code / barcode.
+  Combine several, they run one after another.
 - Gradual volume ramp and growing vibration.
 - Wake-up check: a few minutes after you dismiss the alarm it asks "are you awake?".
   No answer within a minute → full alarm with a mission again.

@@ -1,6 +1,5 @@
 package com.dxrrkwm.rise.ui
 
-import android.content.Context
 import android.content.res.Resources
 import com.dxrrkwm.rise.R
 import com.dxrrkwm.rise.data.Alarm
@@ -19,7 +18,7 @@ fun Resources.daysText(alarm: Alarm): String = when (alarm.days) {
     else -> alarm.days.sorted().joinToString(", ") { dayName(it) }
 }
 
-fun Context.untilText(at: ZonedDateTime): String {
+fun Resources.untilText(at: ZonedDateTime): String {
     val minutes = Duration.between(ZonedDateTime.now(), at).toMinutes() + 1
     return getString(R.string.rings_in, minutes / 60, minutes % 60)
 }
