@@ -1,6 +1,7 @@
 package com.dxrrkwm.rise.ui
 
 import android.content.Context
+import android.content.res.Resources
 import com.dxrrkwm.rise.R
 import com.dxrrkwm.rise.data.Alarm
 import java.time.DayOfWeek
@@ -9,9 +10,9 @@ import java.time.ZonedDateTime
 
 private val WEEKDAYS = DayOfWeek.entries.take(5).toSet()
 
-fun Context.dayName(day: DayOfWeek): String = resources.getStringArray(R.array.days_short)[day.value - 1]
+fun Resources.dayName(day: DayOfWeek): String = getStringArray(R.array.days_short)[day.value - 1]
 
-fun Context.daysText(alarm: Alarm): String = when (alarm.days) {
+fun Resources.daysText(alarm: Alarm): String = when (alarm.days) {
     emptySet<DayOfWeek>() -> getString(R.string.days_once)
     DayOfWeek.entries.toSet() -> getString(R.string.days_every)
     WEEKDAYS -> getString(R.string.days_weekdays)

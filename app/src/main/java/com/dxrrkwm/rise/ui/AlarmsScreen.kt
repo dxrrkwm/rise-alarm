@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,7 +76,7 @@ fun AlarmsScreen(onEdit: (Alarm) -> Unit) {
 private fun AlarmCard(alarm: Alarm, onClick: () -> Unit) {
     val context = LocalContext.current
     val missions = stringArrayResource(R.array.missions)
-    val details = listOf(context.daysText(alarm), missions[alarm.mission.ordinal], alarm.label)
+    val details = listOf(LocalResources.current.daysText(alarm), missions[alarm.mission.ordinal], alarm.label)
         .filter { it.isNotBlank() }
         .joinToString(" · ")
 

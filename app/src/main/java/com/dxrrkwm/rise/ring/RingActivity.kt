@@ -8,6 +8,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import com.dxrrkwm.rise.ui.theme.RiseTheme
 
 class RingActivity : ComponentActivity() {
@@ -19,7 +21,11 @@ class RingActivity : ComponentActivity() {
         setTurnScreenOn(true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onBackPressedDispatcher.addCallback(this) {}
-        setContent { RiseTheme { RingScreen(onClose = ::finish) } }
+        setContent {
+            RiseTheme {
+                Surface(color = MaterialTheme.colorScheme.background) { RingScreen(onClose = ::finish) }
+            }
+        }
     }
 
     companion object {

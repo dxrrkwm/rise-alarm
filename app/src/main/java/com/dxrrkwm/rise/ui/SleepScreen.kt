@@ -9,11 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +43,7 @@ fun SleepScreen() {
     val endsAt by SleepTimerService.endsAt.collectAsStateWithLifecycle()
 
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
@@ -73,17 +74,16 @@ private fun Setup() {
     val context = LocalContext.current
     var minutes by rememberSaveable { mutableIntStateOf(Prefs.sleepMinutes) }
 
-    Text(
-        stringResource(R.string.minutes, minutes),
-        style = MaterialTheme.typography.displayMedium,
-        fontWeight = FontWeight.Light,
-        color = MaterialTheme.colorScheme.primary,
-    )
-    Slider(
-        value = minutes.toFloat(),
-        onValueChange = { minutes = (it / 5).toInt() * 5 },
-        valueRange = 5f..180f,
-    )
+    SleepDial(minutes.toFloat(), Modifier.fillMaxWidth(0.85f), onChange = { minutes = it }) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                durationText(minutes),
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Light,
+            )
+            Text(stringResource(R.string.sleep_drag), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth()) {
         PRESETS.forEach {
             FilterChip(selected = minutes == it, onClick = { minutes = it }, label = { Text(stringResource(R.string.minutes, it)) })
@@ -109,12 +109,13 @@ private fun Running(end: Long) {
     }
     val seconds = left / 1000
 
-    Text(
-        "%d:%02d".format(seconds / 60, seconds % 60),
-        style = MaterialTheme.typography.displayLarge,
-        fontWeight = FontWeight.Light,
-        color = MaterialTheme.colorScheme.primary,
-    )
+    SleepDial(left / 60_000f, Modifier.fillMaxWidth(0.85f)) {
+        Text(
+            "%d:%02d".format(seconds / 60, seconds % 60),
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.Light,
+        )
+    }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         listOf(10, 30).forEach {
             OutlinedButton(onClick = { SleepTimerService.extend(context, it) }) { Text(stringResource(R.string.plus_minutes, it)) }
@@ -124,3 +125,11 @@ private fun Running(end: Long) {
         Text(stringResource(R.string.sleep_stop))
     }
 }
+
+@Composable
+private fun durationText(minutes: Int): String =
+    if (minutes < 60) {
+        stringResource(R.string.minutes, minutes)
+    } else {
+        stringResource(R.string.hours_minutes, minutes / 60, minutes % 60)
+    }

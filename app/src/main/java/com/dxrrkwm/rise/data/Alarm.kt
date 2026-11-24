@@ -19,6 +19,7 @@ data class Alarm(
     val rampSeconds: Int = 60,
     val vibrate: Boolean = true,
     val wakeCheck: Boolean = true,
+    val sound: String = Sounds.DEFAULT,
 ) {
     fun nextTrigger(now: ZonedDateTime = ZonedDateTime.now()): ZonedDateTime {
         val today = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
@@ -39,6 +40,7 @@ data class Alarm(
         .put("ramp", rampSeconds)
         .put("vibrate", vibrate)
         .put("wake_check", wakeCheck)
+        .put("sound", sound)
 
     companion object {
         const val TEST_ID = -1
@@ -59,6 +61,7 @@ data class Alarm(
                 rampSeconds = json.optInt("ramp", 60),
                 vibrate = json.optBoolean("vibrate", true),
                 wakeCheck = json.optBoolean("wake_check", true),
+                sound = json.optString("sound", Sounds.DEFAULT),
             )
         }
     }

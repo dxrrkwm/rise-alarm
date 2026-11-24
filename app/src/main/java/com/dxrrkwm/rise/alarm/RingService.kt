@@ -9,7 +9,6 @@ import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.PowerManager
 import android.os.VibrationAttributes
@@ -23,6 +22,7 @@ import com.dxrrkwm.rise.R
 import com.dxrrkwm.rise.RiseApp
 import com.dxrrkwm.rise.data.Alarm
 import com.dxrrkwm.rise.data.Prefs
+import com.dxrrkwm.rise.data.Sounds
 import com.dxrrkwm.rise.ring.RingActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +75,7 @@ class RingService : Service() {
     }
 
     private suspend fun ring(alarm: Alarm) {
-        val player = createPlayer().also { player = it }
+        val player = createPlayer(alarm.sound).also { player = it }
         player.setVolume(0f, 0f)
         player.start()
 
@@ -131,13 +131,14 @@ class RingService : Service() {
         }
     }
 
-    private fun createPlayer(): MediaPlayer {
+    // a deleted file or a ringtone unreadable before unlock falls back to the bundled chime
+    private fun createPlayer(sound: String): MediaPlayer {
         val attrs = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ALARM)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
-        val system = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
-        return runCatching { player(attrs) { setDataSource(this@RingService, system!!) } }
+        val uri = Sounds.resolve(this, sound)
+        return runCatching { player(attrs) { setDataSource(this@RingService, uri) } }
             .getOrElse { player(attrs) { resources.openRawResourceFd(R.raw.chime).use { setDataSource(it) } } }
     }
 

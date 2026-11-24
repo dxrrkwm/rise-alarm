@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Button
@@ -35,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -44,6 +49,7 @@ import com.dxrrkwm.rise.data.Alarm
 import com.dxrrkwm.rise.data.AlarmStore
 import com.dxrrkwm.rise.data.Mission
 import com.dxrrkwm.rise.data.Prefs
+import com.dxrrkwm.rise.data.Sounds
 import java.time.DayOfWeek
 
 private val RAMPS = listOf(0, 30, 60, 120)
@@ -52,6 +58,7 @@ private val RAMPS = listOf(0, 30, 60, 120)
 @Composable
 fun AlarmEditScreen(initial: Alarm, onClose: () -> Unit) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     var alarm by remember { mutableStateOf(initial) }
     val time = rememberTimePickerState(initial.hour, initial.minute, is24Hour = true)
     val exists = remember { AlarmStore.get(initial.id) != null }
@@ -62,6 +69,12 @@ fun AlarmEditScreen(initial: Alarm, onClose: () -> Unit) {
         val at = AlarmActions.save(context, alarm.copy(hour = time.hour, minute = time.minute, enabled = true))
         if (at != null) Toast.makeText(context, context.untilText(at), Toast.LENGTH_SHORT).show()
         onClose()
+    }
+
+    var pickingSound by remember { mutableStateOf(false) }
+    if (pickingSound) {
+        SoundPicker(alarm.sound, onPick = { alarm = alarm.copy(sound = it) }, onClose = { pickingSound = false })
+        return
     }
 
     Scaffold(
@@ -103,7 +116,7 @@ fun AlarmEditScreen(initial: Alarm, onClose: () -> Unit) {
                         FilterChip(
                             selected = day in alarm.days,
                             onClick = { alarm = alarm.copy(days = alarm.days.toggle(day)) },
-                            label = { Text(context.dayName(day)) },
+                            label = { Text(resources.dayName(day)) },
                         )
                     }
                 }
@@ -132,6 +145,21 @@ fun AlarmEditScreen(initial: Alarm, onClose: () -> Unit) {
                 }
                 if (alarm.mission == Mission.QR && Prefs.qrCode.isEmpty()) {
                     Text(stringResource(R.string.qr_not_set), color = MaterialTheme.colorScheme.error)
+                }
+            }
+
+            Section(stringResource(R.string.sound)) {
+                Row(
+                    Modifier.fillMaxWidth().clickable { pickingSound = true }.padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Rounded.MusicNote, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                    Text(
+                        Sounds.title(context, alarm.sound),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f).padding(start = 16.dp),
+                    )
+                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null)
                 }
             }
 

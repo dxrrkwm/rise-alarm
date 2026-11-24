@@ -1,10 +1,14 @@
 package com.dxrrkwm.rise.ui
 
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,10 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -40,6 +45,7 @@ import com.dxrrkwm.rise.ring.QrScanner
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
+    val resources = LocalResources.current
     var refresh by remember { mutableIntStateOf(0) }
     var scanning by remember { mutableStateOf(false) }
 
@@ -74,6 +80,8 @@ fun SettingsScreen() {
     ) {
         Text(stringResource(R.string.tab_settings), style = MaterialTheme.typography.headlineLarge)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageSection()
+
         Section(stringResource(R.string.section_access)) {
             access.forEach { AccessRow(it, onClick = { context.startActivity(it.settings) }) }
         }
@@ -90,24 +98,22 @@ fun SettingsScreen() {
             Stepper(stringResource(R.string.check_delay), checkDelay, 1..30, {
                 checkDelay = it
                 Prefs.checkDelayMinutes = it
-            }, format = { context.getString(R.string.minutes, it) })
+            }, format = { resources.getString(R.string.minutes, it) })
             Stepper(stringResource(R.string.check_count), checkCount, 0..5, {
                 checkCount = it
                 Prefs.checkCount = it
             })
         }
 
-        Section(stringResource(R.string.section_volume, volume)) {
-            Slider(
-                value = volume.toFloat(),
-                onValueChange = { volume = (it / 5).toInt() * 5 },
-                onValueChangeFinished = { Prefs.volumePercent = volume },
-                valueRange = 30f..100f,
-            )
+        Section(stringResource(R.string.section_alarm)) {
+            Stepper(stringResource(R.string.alarm_volume), volume / 10, 3..10, {
+                volume = it * 10
+                Prefs.volumePercent = volume
+            }, format = { "${it * 10}%" })
             Stepper(stringResource(R.string.max_ring), maxRing, 5..60, {
                 maxRing = it
                 Prefs.maxRingMinutes = it
-            }, format = { context.getString(R.string.minutes, it) })
+            }, format = { resources.getString(R.string.minutes, it) })
         }
 
         OutlinedButton(
@@ -117,6 +123,27 @@ fun SettingsScreen() {
             },
             modifier = Modifier.fillMaxWidth(),
         ) { Text(stringResource(R.string.test_alarm)) }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+private fun LanguageSection() {
+    val context = LocalContext.current
+    val current = remember { AppLanguage.current(context) }
+    val options = listOf(AppLanguage.SYSTEM to stringResource(R.string.language_system)) + AppLanguage.names.toList()
+
+    Section(stringResource(R.string.section_language)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (tag, name) ->
+                FilterChip(
+                    selected = current == tag,
+                    onClick = { AppLanguage.set(context, tag) },
+                    label = { Text(name) },
+                )
+            }
+        }
     }
 }
 

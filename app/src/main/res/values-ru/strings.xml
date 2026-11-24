@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="tab_alarms">Будильники</string>
+    <string name="tab_sleep">Сон</string>
+    <string name="tab_settings">Настройки</string>
+
+    <string name="channel_ring">Будильник</string>
+    <string name="channel_sleep">Таймер сна</string>
+
+    <string name="guard_label">Rise: защита будильника</string>
+    <string name="guard_description">Работает только пока звенит будильник: закрывает меню выключения и шторку, блокирует кнопки громкости и возвращает экран будильника. Ещё блокирует экран по окончании таймера сна. Ничего не читает и никуда не отправляет.</string>
+
+    <string name="alarms_empty">Будильников пока нет. Нажми +, чтобы добавить.</string>
+    <string name="alarm_new">Новый будильник</string>
+    <string name="alarm_edit">Будильник</string>
+    <string name="alarm_delete">Удалить</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="label">Подпись</string>
+
+    <string name="section_days">Дни</string>
+    <string name="section_mission">Задание</string>
+    <string name="section_ramp">Нарастание звука</string>
+    <string name="ramp_off">Сразу громко</string>
+    <string name="seconds">%d сек</string>
+    <string name="minutes">%d мин</string>
+    <string name="plus_minutes">+%d мин</string>
+    <string name="vibration">Вибрация</string>
+    <string name="wake_check">Проверка пробуждения</string>
+    <string name="wake_check_hint">Через %d мин спросит, встал ли ты. Не ответишь — снова будильник</string>
+    <string name="qr_not_set">QR-код не зарегистрирован: пока будет пример. Зарегистрируй код в настройках.</string>
+
+    <string name="days_once">Один раз</string>
+    <string name="days_every">Каждый день</string>
+    <string name="days_weekdays">Будни</string>
+    <string name="rings_in">Зазвонит через %1$d ч %2$d мин</string>
+
+    <string-array name="days_short">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+        <item>Вс</item>
+    </string-array>
+    <string-array name="missions">
+        <item>Без задания</item>
+        <item>Примеры</item>
+        <item>Встряска</item>
+        <item>QR / штрихкод</item>
+    </string-array>
+    <string-array name="levels">
+        <item>Легко</item>
+        <item>Средне</item>
+        <item>Сложно</item>
+    </string-array>
+
+    <string name="ring_notification_title">Подъём!</string>
+    <string name="ring_notification_text">Выполни задание, чтобы выключить</string>
+    <string name="ring_dismiss">Выключить</string>
+    <string name="math_progress">Пример %1$d из %2$d</string>
+    <string name="shake_title">Тряси телефон</string>
+    <string name="qr_mission_title">Отсканируй свой код</string>
+    <string name="qr_wrong">Не тот код</string>
+    <string name="qr_allow_camera">Разрешить камеру</string>
+    <string name="check_title">Ты не спишь?</string>
+    <string name="check_hint">Нажми кнопку, иначе через %d сек снова зазвонит будильник</string>
+    <string name="check_confirm">Я встал</string>
+
+    <string name="sleep_hint">Под конец плавно убавит звук, поставит видео на паузу и заблокирует экран.</string>
+    <string name="sleep_no_guard">Чтобы блокировать экран, включи защиту в настройках.</string>
+    <string name="sleep_start">Старт</string>
+    <string name="sleep_stop">Стоп</string>
+    <string name="sleep_plus_10">+10 мин</string>
+    <string name="sleep_notification_title">Таймер сна</string>
+
+    <string name="section_access">Доступы</string>
+    <string name="access_notifications">Уведомления</string>
+    <string name="access_notifications_hint">Без них будильник не покажется</string>
+    <string name="access_full_screen">Полноэкранный будильник</string>
+    <string name="access_full_screen_hint">Экран будильника поверх блокировки</string>
+    <string name="access_battery">Без ограничений батареи</string>
+    <string name="access_battery_hint">Чтобы система не убивала будильник</string>
+    <string name="access_guard">Защита (спец. возможности)</string>
+    <string name="access_guard_hint">Не дать выключить телефон и звук, блокировка экрана в таймере сна</string>
+    <string name="access_camera">Камера</string>
+    <string name="access_camera_hint">Для задания с QR-кодом</string>
+
+    <string name="section_qr">QR-код для задания</string>
+    <string name="qr_none">Не зарегистрирован</string>
+    <string name="qr_current">Сохранён: %s</string>
+    <string name="qr_register">Зарегистрировать код</string>
+    <string name="qr_register_title">Наведи на QR или штрихкод, который будешь сканировать утром</string>
+    <string name="qr_saved">Код сохранён</string>
+
+    <string name="check_delay">Через сколько</string>
+    <string name="check_count">Сколько раз</string>
+    <string name="max_ring">Максимум звонка</string>
+    <string name="test_alarm">Тестовый будильник через 10 секунд</string>
+    <string name="test_scheduled">Зазвонит через 10 секунд</string>
+    <string name="section_language">Язык</string>
+    <string name="language_system">Как в системе</string>
+    <string name="sound">Мелодия</string>
+    <string name="sound_default">Системная по умолчанию</string>
+    <string name="sound_custom">Мои мелодии</string>
+    <string name="sound_system">Системные мелодии</string>
+    <string name="sound_add">Добавить файл</string>
+    <string name="done">Готово</string>
+    <string name="sleep_drag">веди пальцем по кругу</string>
+    <string name="hours_minutes">%1$d ч %2$02d мин</string>
+    <string name="section_alarm">Будильник</string>
+    <string name="alarm_volume">Громкость</string>
+</resources>
